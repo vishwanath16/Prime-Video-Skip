@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Prime Auto-Skip</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      width: 280px;
+      font-family: 'DM Sans', sans-serif;
+      background: #0d0d0d;
+      color: #f0f0f0;
+      padding: 20px;
+      user-select: none;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+
+    .logo {
+      width: 36px;
+      height: 36px;
+      background: #00a8e1;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    .title {
+      font-size: 15px;
+      font-weight: 600;
+      color: #ffffff;
+      line-height: 1.2;
+    }
+
+    .subtitle {
+      font-size: 11px;
+      color: #666;
+      margin-top: 2px;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-bottom: 14px;
+      cursor: pointer;
+    }
+
+    .toggle-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: #e0e0e0;
+    }
+
+    .toggle-desc {
+      font-size: 11px;
+      color: #555;
+      margin-top: 2px;
+    }
+
+    /* Toggle Switch */
+    .switch {
+      position: relative;
+      width: 44px;
+      height: 24px;
+      flex-shrink: 0;
+    }
+
+    .switch input { opacity: 0; width: 0; height: 0; }
+
+    .slider {
+      position: absolute;
+      inset: 0;
+      background: #333;
+      border-radius: 24px;
+      transition: background 0.25s;
+      cursor: pointer;
+    }
+
+    .slider::before {
+      content: '';
+      position: absolute;
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background: #888;
+      border-radius: 50%;
+      transition: transform 0.25s, background 0.25s;
+    }
+
+    input:checked + .slider { background: #00a8e1; }
+    input:checked + .slider::before {
+      transform: translateX(20px);
+      background: #fff;
+    }
+
+    .log-section {
+      background: #111;
+      border: 1px solid #222;
+      border-radius: 10px;
+      padding: 12px;
+      min-height: 70px;
+      max-height: 130px;
+      overflow-y: auto;
+    }
+
+    .log-title {
+      font-size: 10px;
+      font-weight: 600;
+      color: #444;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    .log-empty {
+      font-size: 12px;
+      color: #3a3a3a;
+      text-align: center;
+      padding: 10px 0;
+    }
+
+    .log-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 12px;
+      color: #aaa;
+      padding: 3px 0;
+      border-bottom: 1px solid #1a1a1a;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .log-item:last-child { border-bottom: none; }
+
+    .log-dot {
+      width: 6px;
+      height: 6px;
+      background: #00a8e1;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .log-time {
+      font-size: 10px;
+      color: #444;
+      margin-left: auto;
+      flex-shrink: 0;
+    }
+
+    .footer {
+      margin-top: 14px;
+      font-size: 10px;
+      color: #333;
+      text-align: center;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="logo">⏭</div>
+    <div>
+      <div class="title">Prime Auto-Skip</div>
+      <div class="subtitle">Amazon Prime Video helper</div>
+    </div>
+  </div>
+
+  <div class="toggle-row" id="toggleRow">
+    <div>
+      <div class="toggle-label">Auto-skip enabled</div>
+      <div class="toggle-desc">Skips intros, credits & recaps</div>
+    </div>
+    <label class="switch" onclick="event.stopPropagation()">
+      <input type="checkbox" id="enableToggle" checked />
+      <span class="slider"></span>
+    </label>
+  </div>
+
+  <div class="log-section">
+    <div class="log-title">Skip log</div>
+    <div id="logList"><div class="log-empty">No skips yet this session</div></div>
+  </div>
+
+  <div class="footer">Active on primevideo.com &amp; amazon.com/video</div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
