@@ -24,12 +24,22 @@
 
   // Text patterns to match on buttons (case-insensitive)
   // NOTE: "Next Episode" is intentionally excluded — we only skip recaps/intros/credits
+  // NOTE: "Watch credits" is intentionally excluded — see NEVER_CLICK_PATTERNS below.
   const SKIP_TEXT_PATTERNS = [
     /^skip intro$/i,
     /^skip recap$/i,
     /^skip credits$/i,
     /^skip previously$/i,
     /^skip opening$/i,
+  ];
+
+  // Labels that must NEVER be clicked, even if they happen to match one of the
+  // CSS selectors above. Prime's end-of-season "Next Up" card shows a "Watch
+  // credits" button that does the OPPOSITE of skipping: clicking it cancels
+  // the built-in autoplay countdown to the next episode. That was causing the
+  // extension to boot the user back to the show's homepage instead of letting
+  // Prime advance to the next episode on its own.
+  const NEVER_CLICK_PATTERNS = [
     /^watch credits$/i,
   ];
 
@@ -37,14 +47,26 @@
   let lastClickTime = 0;
   const COOLDOWN_MS = 3000; // Don't re-click the same button within 3 seconds
 
+  function getLabel(el) {
+    const text = (el.innerText || el.textContent || '').trim();
+    const aria = (el.getAttribute('aria-label') || '').trim();
+    return text || aria;
+  }
+
+  function isForbidden(label) {
+    return NEVER_CLICK_PATTERNS.some((pattern) => pattern.test(label));
+  }
+
   function findAndClickSkipButton() {
     // Try CSS selectors first
     for (const selector of SELECTORS) {
       try {
         const buttons = document.querySelectorAll(selector);
         for (const btn of buttons) {
+          const label = getLabel(btn);
+          if (isForbidden(label)) continue; // never click, regardless of selector match
           if (isVisible(btn) && shouldClick(btn)) {
-            clickButton(btn);
+            clickButton(btn, label);
             return;
           }
         }
@@ -56,12 +78,11 @@
     // Fallback: scan all buttons for skip text (exact trimmed match)
     const candidates = document.querySelectorAll('button, [role="button"], [class*="Button"], [class*="button"]');
     for (const el of candidates) {
-      const text = (el.innerText || el.textContent || '').trim();
-      const aria = (el.getAttribute('aria-label') || '').trim();
-      const label = text || aria;
-      if (SKIP_TEXT_PATTERNS.some(pattern => pattern.test(label))) {
+      const label = getLabel(el);
+      if (isForbidden(label)) continue;
+      if (SKIP_TEXT_PATTERNS.some((pattern) => pattern.test(label))) {
         if (isVisible(el) && shouldClick(el)) {
-          clickButton(el);
+          clickButton(el, label);
           return;
         }
       }
@@ -89,13 +110,13 @@
     return true;
   }
 
-  function clickButton(btn) {
+  function clickButton(btn, label) {
     const now = Date.now();
     lastClickedButton = btn;
     lastClickTime = now;
 
-    const label = (btn.innerText || btn.textContent || 'button').trim();
-    console.log(`[Prime Auto-Skip] Clicking: "${label}"`);
+    const resolvedLabel = label || (btn.innerText || btn.textContent || 'button').trim();
+    console.log(`[Prime Auto-Skip] Clicking: "${resolvedLabel}"`);
 
     // Dispatch a real mouse click event
     btn.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
@@ -103,7 +124,7 @@
 
     // Notify popup/badge (optional)
     try {
-      chrome.runtime.sendMessage({ type: 'SKIPPED', label });
+      chrome.runtime.sendMessage({ type: 'SKIPPED', label: resolvedLabel });
     } catch (e) {
       // Extension context might be invalidated, ignore
     }
