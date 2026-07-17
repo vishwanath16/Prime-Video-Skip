@@ -5,6 +5,7 @@
   const SELECTORS = [
     // Skip Intro
     '[data-testid="skip-intro"]',
+    '[aria-label="Skip Intro"]',
     '.skipelement',
     'button.skipelement',
     '[class*="SkipButton"]',
@@ -13,14 +14,24 @@
 
     // Skip Credits
     '[data-testid="skip-credits"]',
+    '[aria-label="Skip Credits"]',
     '[class*="skip-credits"]',
     '[class*="skipCredits"]',
 
     // Skip Recap / Previously On
     '[data-testid="skip-recap"]',
+    '[aria-label="Skip Recap"]',
+    '[aria-label="Skip Previously"]',
     '[class*="skip-recap"]',
     '[class*="skipRecap"]',
   ];
+  // NOTE: Amazon has moved to hashed/atomic CSS class names on the player
+  // controls (e.g. "f13imzm1 fg4c0o1 ..."), so the class-name-based selectors
+  // above no longer match anything. They're kept as harmless fallbacks in
+  // case Amazon reverts on some surface. The [aria-label="..."] selectors and
+  // the text-based fallback scan further down are what's actually doing the
+  // work now, since aria-label is the one thing that stays stable across
+  // their styling changes.
 
   // Text patterns to match on buttons (case-insensitive)
   // NOTE: "Next Episode" is intentionally excluded — we only skip recaps/intros/credits
